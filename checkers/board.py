@@ -1,4 +1,4 @@
-from Tkinter import Tk, Canvas
+from tkinter import Tk, Canvas
 from itertools import product
 
 from server import Server
@@ -49,7 +49,7 @@ class Board(Tk):
         elif self.logic_board[x][y] > 0:
             self.selected = (x, y)
 
-        print "You clicked on cell (%s, %s)" % (x, y)
+        print("You clicked on cell (%s, %s)" % (x, y))
 
     def run(self):
         self.title("Draughts")
