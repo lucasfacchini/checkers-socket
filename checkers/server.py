@@ -23,6 +23,12 @@ class Server:
                             [1, -1, 1, -1, 1, -1, 1, -1, 1, -1]]
 
     def handle_move(self, from_x, from_y, to_x, to_y):
+        from_x = int(from_x)
+        from_y = int(from_y)
+        to_x = int(to_x)
+        to_y = int(to_y)
+        print >> sys.stderr, 'handle_move from_x: "%d" from_y: %d to_x: %d to_y: %d' % (from_x, from_y, to_x, to_y)
+
         if self.logic_board[to_x][to_y] == 0:
             self.logic_board[to_x][to_y] = self.logic_board[from_x][from_y]
             self.logic_board[from_x][from_y] = 0
@@ -30,6 +36,7 @@ class Server:
         return self.logic_board
 
     def handle_join(self, data):
+        print >> sys.stderr, 'handle_join data: "%s"' % data
         pass
 
     def get_board(self):

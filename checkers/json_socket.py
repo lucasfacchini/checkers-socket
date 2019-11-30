@@ -14,8 +14,22 @@ class JsonSocket:
     def on(self, event, handle):
         self.handles[event] = handle
 
-    def call_handle(self, event):
-        self.handles[event]()
+    def call_handle(self, data):
+        event, args = self.parse_input_data(data)
+
+        res = None
+        if event in self.handles:
+            print >> sys.stderr, 'call_handle "%s"' % event
+            res = self.handles[event](*args)
+        else:
+           print >> sys.stderr, 'No handle for "%s"' % event
+
+        return res
+
+    def parse_input_data(self, data):
+        data = data.split()
+
+        return [data.pop(0), data]
 
     def loop(self):
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -31,11 +45,10 @@ class JsonSocket:
 
                 # Receive the data in small chunks and retransmit it
                 while True:
-                    data = connection.recv(16)
+                    data = connection.recv(16).rstrip()
                     print >> sys.stderr, 'received "%s"' % data
                     if data:
-
-                        pass
+                        res = self.call_handle(data)
                     # print >> sys.stderr, 'sending data back to the client'
                     # connection.sendall(data)
                     else:
