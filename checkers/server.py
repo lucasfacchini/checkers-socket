@@ -46,5 +46,5 @@ class Server:
         self.conn.loop()
 
 
-server = Server()
-server.start()
+# server = Server()
+# server.start()
