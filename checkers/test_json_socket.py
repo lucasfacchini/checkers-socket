@@ -4,7 +4,7 @@ import unittest
 import logging
 
 class JsonSocketTest(unittest.TestCase):
-    
+
     def test_encode_message(self):
         json_socket = JsonSocket()
         data = ['test', [1, 2, 3]]
@@ -16,17 +16,17 @@ class JsonSocketTest(unittest.TestCase):
 
 class JsonSocketServerTest(unittest.TestCase):
 
-    def test_server_call(self):
+    def setUp(self):
         logger = logging.getLogger()
         logger.setLevel(logging.DEBUG)
 
+    def test_server_call(self):
         server = JsonSocketServer()
         server.serve()
         client = JsonSocketClient()
         client.connect()
 
         server.on('test', lambda n: ['test_response', [n + 1]])
-
         def test_response(n):
             self.assertEqual(2, n)
             client.call(SOCKET_CLOSE_HANDLE, [0])
@@ -37,3 +37,18 @@ class JsonSocketServerTest(unittest.TestCase):
 
         server.join()
         client.join()
+
+    def test_multiple_connections(self):
+        server = JsonSocketServer(max_clients=2)
+        server.serve()
+        client1 = JsonSocketClient()
+        client1.connect()
+        client2 = JsonSocketClient()
+        client2.connect()
+
+        client1.call(SOCKET_CLOSE_HANDLE, [0])
+        client2.call(SOCKET_CLOSE_HANDLE, [0])
+
+        client2.join()
+        client1.join()
+        server.join()

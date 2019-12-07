@@ -1,6 +1,6 @@
 import socket
 import sys
-import json 
+import json
 from threading import Thread
 import logging
 
@@ -11,8 +11,10 @@ SOCKET_CLOSE_HANDLE = 'disconnect'
 
 class JsonSocket:
 
-    def __init__(self):
+    def __init__(self, sock=None, raddr=None, handles={}):
+        self.sock = sock
         self.handles = {}
+        self.raddr = raddr
 
     def on(self, event, handle):
         self.handles[event] = handle
@@ -52,7 +54,7 @@ class JsonSocket:
                     self.send_data(res, sock)
 
     def send_data(self, data, socket):
-        logging.info('sent "%s"' % data)
+        logging.info('sent %s' % data)
         socket.sendall(self.encode_message(data).encode())
 
     def read_data(self, socket):
@@ -64,8 +66,8 @@ class JsonSocket:
                 if message_length > 0:
                     data = ''
                     while True:
-                        data = data + socket.recv(5).decode()
-                        logging.info('received "%s"' % data)
+                        data = data + socket.recv(message_length).decode()
+                        logging.info('received %s from %s', data, self.raddr)
                         if len(data) >= message_length:
                             break
 
@@ -85,7 +87,8 @@ class JsonSocketClient(Thread, JsonSocket):
 
     def connect(self):
         self.start_socket()
-        self.sock.connect((BIND_ADDRESS, BIND_PORT))
+        self.raddr = (BIND_ADDRESS, BIND_PORT)
+        self.sock.connect(self.raddr)
         self.start()
 
     def call(self, handle, data=None):
@@ -96,18 +99,18 @@ class JsonSocketClient(Thread, JsonSocket):
 
     def close(self, sock):
         sock.close()
-        logging.info('closed connection')
+        logging.info('client closed connection')
 
 
 class JsonSocketServer(Thread, JsonSocket):
 
-    def __init__(self):
+    def __init__(self, max_clients=1):
         Thread.__init__(self)
         JsonSocket.__init__(self)
 
         self.daemon = True
         self.connections = []
-        self.on(SOCKET_CLOSE_HANDLE, self.close_connection)
+        self.max_clients = max_clients
 
     def serve(self):
         self.start_socket()
@@ -116,19 +119,41 @@ class JsonSocketServer(Thread, JsonSocket):
         self.start()
 
     def run(self):
-        while True:
+        while len(self.connections) < self.max_clients:
             logging.info('waiting for a connection')
             connection, client_address = self.sock.accept()
-            self.connections.append(connection)
+            connection_handler = JsonSocketServerConnection(connection, client_address, self.handles)
+            self.connections.append(connection_handler)
             logging.info('connection from %s', client_address)
 
-            self.wait_data(connection, True)
-            if len(self.connections) == 0:
+            connection_handler.start()
+            active_connections = list(filter(lambda connection: connection.connected, self.connections))
+            if len(active_connections) == 0:
                 break
+        self.close()
 
-    def close_connection(self, sock=None):
-        self.send_data(['disconnect', []], sock)
-        sock.close()
-        i = self.connections.index(sock)
-        self.connections.pop(i)
-        logging.info('closed connection %d', i)
+    def close(self):
+        logging.info('server closed connection')
+        self.sock.close()
+
+
+class JsonSocketServerConnection(Thread, JsonSocket):
+
+    def __init__(self, sock, client_address, handles):
+        Thread.__init__(self)
+        JsonSocket.__init__(self, sock, client_address)
+
+        self.handles = handles
+        self.connected = True
+        self.sock = sock
+        self.on(SOCKET_CLOSE_HANDLE, self.close)
+
+    def run(self):
+        self.wait_data(self.sock, True)
+        self.sock.close()
+
+    def close(self, _):
+        self.connected = False
+        logging.info('server closed client connection %s', self.raddr)
+
+        return ['disconnect', []]
