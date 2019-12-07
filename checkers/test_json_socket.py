@@ -11,7 +11,7 @@ class JsonSocketTest(unittest.TestCase):
 
         message = json_socket.encode_message(data)
 
-        self.assertEquals('0019["test", [1, 2, 3]]', message)
+        self.assertEqual('0019["test", [1, 2, 3]]', message)
 
 
 class JsonSocketServerTest(unittest.TestCase):
@@ -22,13 +22,18 @@ class JsonSocketServerTest(unittest.TestCase):
 
         server = JsonSocketServer()
         server.serve()
-
-        server.on('test', lambda n: n + 1)
-
         client = JsonSocketClient()
         client.connect()
+
+        server.on('test', lambda n: ['test_response', [n + 1]])
+
+        def test_response(n):
+            self.assertEqual(2, n)
+            client.call(SOCKET_CLOSE_HANDLE, [0])
+
+        client.on('test_response', test_response)
+
         response = client.call('test', [1])
 
-        self.assertEquals(2, response)
-
-        server.close()
+        server.join()
+        client.join()
