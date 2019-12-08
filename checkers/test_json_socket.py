@@ -26,8 +26,8 @@ class JsonSocketServerTest(unittest.TestCase):
         client = JsonSocketClient()
         client.connect()
 
-        server.on('test', lambda n: ['test_response', [n + 1]])
-        def test_response(n):
+        server.on('test', lambda n, _: ['test_response', [n + 1]])
+        def test_response(n, c):
             self.assertEqual(2, n)
             client.call(SOCKET_CLOSE_HANDLE, [0])
 
@@ -45,6 +45,7 @@ class JsonSocketServerTest(unittest.TestCase):
         client1.connect()
         client2 = JsonSocketClient()
         client2.connect()
+
 
         client1.call(SOCKET_CLOSE_HANDLE, [0])
         client2.call(SOCKET_CLOSE_HANDLE, [0])

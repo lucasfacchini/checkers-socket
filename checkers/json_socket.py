@@ -6,6 +6,7 @@ import logging
 
 BIND_ADDRESS = 'localhost'
 BIND_PORT = 8000
+SOCKET_CONNECT_HANDLE = 'connect'
 SOCKET_CLOSE_HANDLE = 'disconnect'
 
 
@@ -44,7 +45,7 @@ class JsonSocket:
 
             if data:
                 event, args = tuple(data)
-
+                args.append(self)
                 if event == SOCKET_CLOSE_HANDLE:
                     disconnected = True
                     args = [sock]
@@ -53,7 +54,9 @@ class JsonSocket:
                 if send_response and res:
                     self.send_data(res, sock)
 
-    def send_data(self, data, socket):
+    def send_data(self, data, socket=None):
+        if not socket:
+            socket = self.sock
         logging.info('sent %s' % data)
         socket.sendall(self.encode_message(data).encode())
 
@@ -149,6 +152,8 @@ class JsonSocketServerConnection(Thread, JsonSocket):
         self.on(SOCKET_CLOSE_HANDLE, self.close)
 
     def run(self):
+        if SOCKET_CONNECT_HANDLE in self.handles:
+            self.call_handle(SOCKET_CONNECT_HANDLE, [self])
         self.wait_data(self.sock, True)
         self.sock.close()
 
