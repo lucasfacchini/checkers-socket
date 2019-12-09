@@ -1,6 +1,7 @@
 from tkinter import Tk, Canvas
 from itertools import product
 from json_socket import *
+from checkers_game import PIECE_WHITE, PIECE_KING_WHITE, PIECE_BLACK, PIECE_KING_BLACK, FIELD_WHITE, FIELD_BLACK, MIN_POS_BOARD, MAX_POS_BOARD
 import logging
 
 from server import Server
@@ -39,17 +40,20 @@ class Board(Tk):
 
     def draw_board(self):
         self.canvas.delete("all")
-        for (i, j) in product(range(10), range(10)):
+        r = range(MIN_POS_BOARD, MAX_POS_BOARD + 1)
+        for (i, j) in product(r, r):
             x1, y1 = (i * self.cellsize), (j * self.cellsize),
             x2, y2 = x1 + self.cellsize, y1 + self.cellsize
             cell = self.logic_board[i][j]
-            color = "white" if cell == -1 else "black"
+            color = "white" if cell == FIELD_WHITE else "grey"
             board.draw_rectangle(x1, y1, x2, y2, color)
-            if cell > 0:
-                if cell == 1:
-                    pawnColor = "red"
-                elif cell == 2:
-                    pawnColor = "blue"
+            pawnColor = None
+            if cell == PIECE_WHITE:
+                pawnColor = "white"
+            elif cell == PIECE_BLACK:
+                pawnColor = "black"
+
+            if pawnColor != None:
                 board.draw_circle(x1, y1, x2, y2, pawnColor)
 
     def draw_rectangle(self, x1, y1, x2, y2, color):

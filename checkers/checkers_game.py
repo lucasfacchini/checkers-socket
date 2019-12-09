@@ -13,7 +13,7 @@ PIECES_KING = [PIECE_KING_WHITE, PIECE_KING_BLACK]
 PIECES = [PIECE_WHITE, PIECE_KING_WHITE, PIECE_BLACK, PIECE_KING_BLACK]
 
 MIN_POS_BOARD = 0
-MAX_POS_BOARD = 7
+MAX_POS_BOARD = 9
 
 PLAYER_BLACK = 0
 PLAYER_WHITE = 1
@@ -41,6 +41,8 @@ class CheckersGame():
             self.generate_row_start_field_black(),
             self.generate_row_start_field_white(),
             self.generate_row_start_field_black(),
+            self.generate_row_start_field_white(),
+            self.generate_row_start_field_black(),
             self.generate_row_start_field_white()
         ]
 
@@ -49,30 +51,32 @@ class CheckersGame():
             self.generate_row_start_piece_white(),
             self.generate_row_start_field_white_piece_white(),
             self.generate_row_start_piece_white(),
-            self.generate_row_start_field_white(),
+            self.generate_row_start_field_white_piece_white(),
             self.generate_row_start_field_black(),
+            self.generate_row_start_field_white(),
+            self.generate_row_start_piece_black(),
             self.generate_row_start_field_white_piece_black(),
             self.generate_row_start_piece_black(),
             self.generate_row_start_field_white_piece_black()
         ]
 
     def generate_row_start_field_black(self):
-        return [FIELD_BLACK, FIELD_WHITE, FIELD_BLACK, FIELD_WHITE, FIELD_BLACK, FIELD_WHITE, FIELD_BLACK, FIELD_WHITE]
+        return [FIELD_BLACK, FIELD_WHITE, FIELD_BLACK, FIELD_WHITE, FIELD_BLACK, FIELD_WHITE, FIELD_BLACK, FIELD_WHITE, FIELD_BLACK, FIELD_WHITE]
 
     def generate_row_start_field_white(self):
-        return [FIELD_WHITE, FIELD_BLACK, FIELD_WHITE, FIELD_BLACK, FIELD_WHITE, FIELD_BLACK, FIELD_WHITE, FIELD_BLACK]
+        return [FIELD_WHITE, FIELD_BLACK, FIELD_WHITE, FIELD_BLACK, FIELD_WHITE, FIELD_BLACK, FIELD_WHITE, FIELD_BLACK, FIELD_WHITE, FIELD_BLACK]
 
     def generate_row_start_piece_black(self):
-        return [PIECE_BLACK, FIELD_WHITE, PIECE_BLACK, FIELD_WHITE, PIECE_BLACK, FIELD_WHITE, PIECE_BLACK, FIELD_WHITE]
+        return [PIECE_BLACK, FIELD_WHITE, PIECE_BLACK, FIELD_WHITE, PIECE_BLACK, FIELD_WHITE, PIECE_BLACK, FIELD_WHITE, PIECE_BLACK, FIELD_WHITE]
 
     def generate_row_start_piece_white(self):
-        return [PIECE_WHITE, FIELD_WHITE, PIECE_WHITE, FIELD_WHITE, PIECE_WHITE, FIELD_WHITE, PIECE_WHITE, FIELD_WHITE]
+        return [PIECE_WHITE, FIELD_WHITE, PIECE_WHITE, FIELD_WHITE, PIECE_WHITE, FIELD_WHITE, PIECE_WHITE, FIELD_WHITE, PIECE_WHITE, FIELD_WHITE]
 
     def generate_row_start_field_white_piece_black(self):
-        return [FIELD_WHITE, PIECE_BLACK, FIELD_WHITE, PIECE_BLACK, FIELD_WHITE, PIECE_BLACK, FIELD_WHITE, PIECE_BLACK]
+        return [FIELD_WHITE, PIECE_BLACK, FIELD_WHITE, PIECE_BLACK, FIELD_WHITE, PIECE_BLACK, FIELD_WHITE, PIECE_BLACK, FIELD_WHITE, PIECE_BLACK]
 
     def generate_row_start_field_white_piece_white(self):
-        return [FIELD_WHITE, PIECE_WHITE, FIELD_WHITE, PIECE_WHITE, FIELD_WHITE, PIECE_WHITE, FIELD_WHITE, PIECE_WHITE]
+        return [FIELD_WHITE, PIECE_WHITE, FIELD_WHITE, PIECE_WHITE, FIELD_WHITE, PIECE_WHITE, FIELD_WHITE, PIECE_WHITE, FIELD_WHITE, PIECE_WHITE]
 
     def move(self, player, from_x, from_y, to_x, to_y):
         x_walk_diff = from_x - to_x
@@ -134,8 +138,8 @@ class CheckersGame():
             self.validate_compulsory_capture(player)
 
     def validate_compulsory_capture(self, player):
-        for x in range(MIN_POS_BOARD, MAX_POS_BOARD):
-            for y in range(MIN_POS_BOARD, MAX_POS_BOARD):
+        for x in range(MIN_POS_BOARD, MAX_POS_BOARD + 1):
+            for y in range(MIN_POS_BOARD, MAX_POS_BOARD + 1):
                 if player == PLAYER_WHITE and self.is_pieces_white(x, y):
                     self.check_neighbors_compulsory_capture(x, y, 1, PIECE_KING_WHITE, PIECES_BLACK)
                 elif player == PLAYER_BLACK and self.is_pieces_black(x, y):

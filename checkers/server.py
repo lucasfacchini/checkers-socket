@@ -1,4 +1,5 @@
 from json_socket import *
+from checkers_game import CheckersGame
 from threading import Lock
 from time import sleep
 
@@ -19,16 +20,7 @@ class Server:
         self.players = []
         self.current_player = None
         self.status = None
-        self.logic_board = [[-1, 2, -1, 2, -1, 2, -1, 2, -1, 2],
-                            [2, -1, 2, -1, 2, -1, 2, -1, 2, -1],
-                            [-1, 2, -1, 2, -1, 2, -1, 2, -1, 2],
-                            [2, -1, 2, -1, 2, -1, 2, -1, 2, -1],
-                            [-1, 0, -1, 0, -1, 0, -1, 0, -1, 0],
-                            [0, -1, 0, -1, 0, -1, 0, -1, 0, -1],
-                            [-1, 1, -1, 1, -1, 1, -1, 1, -1, 1],
-                            [1, -1, 1, -1, 1, -1, 1, -1, 1, -1],
-                            [-1, 1, -1, 1, -1, 1, -1, 1, -1, 1],
-                            [1, -1, 1, -1, 1, -1, 1, -1, 1, -1]]
+        self.game = CheckersGame()
 
     def handle_join(self, connection):
         self.players.append(connection)
@@ -48,7 +40,7 @@ class Server:
     def start_game(self):
         self.status = self.STATUS_ONGOING
         logging.info('SERVER STARTED GAME')
-        self.send_all('start_game', [self.logic_board])
+        self.send_all('start_game', [self.game.board])
         self.current_player = self.players[0]
 
     def end_game(self):
@@ -56,21 +48,21 @@ class Server:
         self.lock_running.release()
 
     def handle_move(self, from_x, from_y, to_x, to_y, connection):
-        print(self.current_player)
+        logging.info(self.current_player)
         if connection == self.current_player:
             from_x = int(from_x)
             from_y = int(from_y)
             to_x = int(to_x)
             to_y = int(to_y)
 
-            if self.logic_board[to_x][to_y] == 0:
-                self.logic_board[to_x][to_y] = self.logic_board[from_x][from_y]
-                self.logic_board[from_x][from_y] = 0
+            turn = self.game.move(player, from_x, from_y, to_x, to_y)
 
-            self.send_all('board_response', [self.logic_board])
-            self.switch_player()
+            self.send_all('board_response', [self.game.board])
 
-        return self.logic_board
+            if turn != player:
+                self.switch_player()
+
+        return self.game.board
 
     def switch_player(self):
         if self.current_player == self.players[0]:
@@ -83,7 +75,7 @@ class Server:
             player.send_data([event , data])
 
     def get_board(self):
-        return self.logic_board
+        return self.game.board
 
     def start(self):
         self.lock_running.acquire()

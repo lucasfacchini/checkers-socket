@@ -9,22 +9,22 @@ class CheckersGameTest(unittest.TestCase):
 
     def test_validate_move_no_piece(self):
         self.assertInvalidMovimentException(MSG_NO_PIECE, PLAYER_BLACK, 1, 0, 0, 0)
-        self.assertInvalidMovimentException(MSG_NO_PIECE, PLAYER_BLACK, 8, 0, 0, 0)
+        self.assertInvalidMovimentException(MSG_NO_PIECE, PLAYER_BLACK, MAX_POS_BOARD + 1, 0, 0, 0)
         self.assertInvalidMovimentException(MSG_NO_PIECE, PLAYER_BLACK, 0, -1, 0, 0)
-        self.assertInvalidMovimentException(MSG_NO_PIECE, PLAYER_BLACK, 0, 8, 0, 0)
+        self.assertInvalidMovimentException(MSG_NO_PIECE, PLAYER_BLACK, 0, MAX_POS_BOARD + 1, 0, 0)
         self.assertInvalidMovimentException(MSG_NO_PIECE, PLAYER_BLACK, 0, 1, 0, 0)
         self.assertInvalidMovimentException(MSG_NO_PIECE, PLAYER_BLACK, 4, 0, 0, 0)
 
     def test_validate_move_invalid_moviment(self):
         self.assertInvalidMovimentException(MSG_INVALID_MOVEMENT, PLAYER_BLACK, 0, 0, -1, 0)
-        self.assertInvalidMovimentException(MSG_INVALID_MOVEMENT, PLAYER_BLACK, 0, 0, 8, 0)
+        self.assertInvalidMovimentException(MSG_INVALID_MOVEMENT, PLAYER_BLACK, 0, 0, MAX_POS_BOARD + 1, 0)
         self.assertInvalidMovimentException(MSG_INVALID_MOVEMENT, PLAYER_BLACK, 0, 0, 0, -1)
-        self.assertInvalidMovimentException(MSG_INVALID_MOVEMENT, PLAYER_BLACK, 0, 0, 0, 8)
+        self.assertInvalidMovimentException(MSG_INVALID_MOVEMENT, PLAYER_BLACK, 0, 0, 0, MAX_POS_BOARD + 1)
         self.assertInvalidMovimentException(MSG_INVALID_MOVEMENT, PLAYER_BLACK, 0, 0, 0, 1)
 
     def test_validate_move_piece_belongs_other_player(self):
         self.assertInvalidMovimentException(MSG_PIECE_BELONGS_OTHER_PLAYER, PLAYER_BLACK, 0, 2, 0, 0)
-        self.assertInvalidMovimentException(MSG_PIECE_BELONGS_OTHER_PLAYER, PLAYER_WHITE, 5, 1, 0, 0)
+        self.assertInvalidMovimentException(MSG_PIECE_BELONGS_OTHER_PLAYER, PLAYER_WHITE, 6, 0, 0, 0)
 
         self.game.init_board()
         self.game.board[0][2] = PIECE_KING_WHITE
@@ -37,7 +37,10 @@ class CheckersGameTest(unittest.TestCase):
         self.assertInvalidMovimentException(MSG_MOVE_TO_SAME_POS, PLAYER_WHITE, 0, 0, 0, 0)
 
     def test_validate_move_piece_in_target_pos(self):
-        self.assertInvalidMovimentException(MSG_PIECE_IN_TARGET_POS, PLAYER_WHITE, 2, 0, 5, 1)
+        self.game.init_board()
+        self.game.board[3][3] = PIECE_WHITE
+        self.game.board[4][4] = PIECE_BLACK
+        self.assertInvalidMovimentException(MSG_PIECE_IN_TARGET_POS, PLAYER_WHITE, 3, 3, 4, 4)
 
     def test_validate_move_wrong_direction(self):
         self.game.init_board()
@@ -99,14 +102,14 @@ class CheckersGameTest(unittest.TestCase):
         self.assertNoCompulsoryCaptureException(PLAYER_WHITE, 1, 1, PIECE_KING_WHITE)
 
         self.game.init_board()
-        self.game.board[2][6] = PIECE_KING_WHITE
-        self.game.board[1][7] = PIECE_KING_BLACK
-        self.assertNoCompulsoryCaptureException(PLAYER_WHITE, 2, 6, PIECE_KING_WHITE)
+        self.game.board[2][MAX_POS_BOARD -1] = PIECE_KING_WHITE
+        self.game.board[1][MAX_POS_BOARD] = PIECE_KING_BLACK
+        self.assertNoCompulsoryCaptureException(PLAYER_WHITE, 2, MAX_POS_BOARD -1, PIECE_KING_WHITE)
 
         self.game.init_board()
-        self.game.board[6][2] = PIECE_WHITE
-        self.game.board[7][3] = PIECE_BLACK
-        self.assertNoCompulsoryCaptureException(PLAYER_WHITE, 6, 2, PIECE_WHITE)
+        self.game.board[MAX_POS_BOARD -1][2] = PIECE_WHITE
+        self.game.board[MAX_POS_BOARD][3] = PIECE_BLACK
+        self.assertNoCompulsoryCaptureException(PLAYER_WHITE, MAX_POS_BOARD -1, 2, PIECE_WHITE)
 
         self.game.init_board()
         self.game.board[3][3] = PIECE_WHITE
@@ -194,9 +197,9 @@ class CheckersGameTest(unittest.TestCase):
         self.assertNoCompulsoryCaptureException(PLAYER_BLACK, 6, 0, PIECE_BLACK)
 
         self.game.init_board()
-        self.game.board[6][6] = PIECE_KING_BLACK
-        self.game.board[7][7] = PIECE_KING_WHITE
-        self.assertNoCompulsoryCaptureException(PLAYER_BLACK, 6, 6, PIECE_KING_BLACK)
+        self.game.board[MAX_POS_BOARD -1][MAX_POS_BOARD -1] = PIECE_KING_BLACK
+        self.game.board[MAX_POS_BOARD][MAX_POS_BOARD] = PIECE_KING_WHITE
+        self.assertNoCompulsoryCaptureException(PLAYER_BLACK, MAX_POS_BOARD -1, MAX_POS_BOARD -1, PIECE_KING_BLACK)
 
         self.game.init_board()
         self.game.board[5][1] = PIECE_KING_BLACK
