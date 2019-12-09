@@ -84,7 +84,8 @@ class CheckersGame():
         self.validate_move(player, from_x, from_y, to_x, to_y, x_walk_diff, y_walk_diff)
 
         turn = None
-        piece = self.capture(from_x, from_y, x_walk_diff, y_walk_diff)
+        pieces_enemies = PIECES_BLACK if player == PLAYER_WHITE else PIECES_WHITE
+        piece = self.capture(from_x, from_y, x_walk_diff, y_walk_diff, pieces_enemies)
         if piece != None:
             turn = player
             self.kill(piece[0], piece[1])
@@ -129,9 +130,10 @@ class CheckersGame():
 
         piece_white_incorrect_direction = self.is_piece_white(from_x, from_y) and x_walk_diff >= 0
         piece_black_incorrect_direction = self.is_piece_black(from_x, from_y) and x_walk_diff <= 0
+        pieces_enemies = PIECES_BLACK if player == PLAYER_WHITE else PIECES_WHITE
         if piece_white_incorrect_direction or piece_black_incorrect_direction or x_walk_diff == 0 or y_walk_diff == 0:
             raise InvalidMovimentException(MSG_WRONG_DIRECTION)
-        elif self.capture(from_x, from_y, x_walk_diff, y_walk_diff) == None:
+        elif self.capture(from_x, from_y, x_walk_diff, y_walk_diff, pieces_enemies) == None:
             if abs(x_walk_diff) > 1 or abs(y_walk_diff) > 1:
                 raise InvalidMovimentException(MSG_ONLY_ONE_FIELD_PER_ROUND)
 
@@ -145,11 +147,13 @@ class CheckersGame():
                 elif player == PLAYER_BLACK and self.is_pieces_black(x, y):
                     self.check_neighbors_compulsory_capture(x, y, -1, PIECE_KING_BLACK, PIECES_WHITE)
 
-    def capture(self, from_x, from_y, x_walk_diff, y_walk_diff):
+    def capture(self, from_x, from_y, x_walk_diff, y_walk_diff, pieces_enemies):
         if abs(x_walk_diff) == 2 and abs(y_walk_diff) == 2:
-            enemy_pos = (from_x + x_walk_diff / 2, from_y + y_walk_diff / 2)
-            valid_div = enemy_pos[0] % 1 == 0 and enemy_pos[1] % 1 == 0
-            if valid_div and self.is_within_board(enemy_pos[0], enemy_pos[1]) and self.board[enemy_pos[0], enemy_pos[1]] in pieces_enemies:
+            x = from_x - x_walk_diff / 2
+            y = from_y - y_walk_diff / 2
+            enemy_pos = (int(x), int(y))
+            valid_div = x % 1 == 0 and y % 1 == 0
+            if valid_div and self.is_within_board(enemy_pos[0], enemy_pos[1]) and self.board[enemy_pos[0]][enemy_pos[1]] in pieces_enemies:
                 return enemy_pos
 
         return None

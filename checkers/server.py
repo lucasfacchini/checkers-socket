@@ -1,5 +1,5 @@
 from json_socket import *
-from checkers_game import CheckersGame, PLAYER_BLACK, PLAYER_WHITE
+from checkers_game import CheckersGame, CheckersGameException, PLAYER_BLACK, PLAYER_WHITE
 from threading import Lock
 from time import sleep
 
@@ -63,8 +63,13 @@ class Server:
 
             try:
                 turn = self.game.move(self.current_player.color, from_x, from_y, to_x, to_y)
-            except Exception as e:
+            except CheckersGameException as e:
                 connection.send_data(['error', [str(e)]])
+                return self.game.board
+            except Exception as e:
+                connection.send_data(['error', ['An error has occurred on server side']])
+                logger.exception(e)
+
                 return self.game.board
 
             self.send_all('board_response', [self.game.board])
