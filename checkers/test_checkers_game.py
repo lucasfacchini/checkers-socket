@@ -304,6 +304,3 @@ class CheckersGameTest(unittest.TestCase):
     def assertNoCompulsoryCaptureException(self, player, x, y, expected_piece):
         self.game.validate_compulsory_capture(player)
         self.assertEqual(self.game.board[x][y], expected_piece)
-
-if __name__ == '__main__':
-    unittest.main()
