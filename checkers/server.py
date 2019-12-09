@@ -1,5 +1,5 @@
 from json_socket import *
-from checkers_game import CheckersGame
+from checkers_game import CheckersGame, PLAYER_BLACK, PLAYER_WHITE
 from threading import Lock
 from time import sleep
 
@@ -18,17 +18,23 @@ class Server:
         self.lock_running = Lock()
 
         self.players = []
+        self.connections = {}
         self.current_player = None
         self.status = None
         self.game = CheckersGame()
 
     def handle_join(self, connection):
-        self.players.append(connection)
+        player = Player(connection, PLAYER_BLACK if len(self.players) == 0 else PLAYER_WHITE)
+        self.players.append(player)
+        self.connections[connection] = player
         if len(self.players) == 2:
             self.start_game()
 
+        connection.send_data(['connect_response', [player.color]])
+
     def handle_leave(self, connection):
-        i = self.players.index(connection)
+        player = self.connections[connection]
+        i = self.players.index(player)
         self.players.pop(i)
         self.status = self.STATUS_WAITING_PLAYERS
         logging.info('PLAYER %d LEFT', i)
@@ -49,30 +55,28 @@ class Server:
 
     def handle_move(self, from_x, from_y, to_x, to_y, connection):
         logging.info(self.current_player)
-        if connection == self.current_player:
+        if self.connections[connection] == self.current_player:
             from_x = int(from_x)
             from_y = int(from_y)
             to_x = int(to_x)
             to_y = int(to_y)
 
-            turn = self.game.move(player, from_x, from_y, to_x, to_y)
+            try:
+                turn = self.game.move(self.current_player.color, from_x, from_y, to_x, to_y)
+            except Exception as e:
+                connection.send_data(['error', [str(e)]])
+                return self.game.board
 
             self.send_all('board_response', [self.game.board])
 
-            if turn != player:
-                self.switch_player()
+            if turn != self.current_player.color:
+                self.current_player = self.players[turn]
 
         return self.game.board
 
-    def switch_player(self):
-        if self.current_player == self.players[0]:
-            self.current_player = self.players[1]
-        else:
-            self.current_player = self.players[0]
-
     def send_all(self, event, data):
         for player in self.players:
-            player.send_data([event , data])
+            player.connection.send_data([event , data])
 
     def get_board(self):
         return self.game.board
@@ -83,6 +87,13 @@ class Server:
         self.status = self.STATUS_WAITING_PLAYERS
         logging.info('SERVER WAITING PLAYERS')
         self.lock_running.acquire()
+
+
+class Player:
+
+    def __init__(self, connection, color):
+        self.connection = connection
+        self.color = color
 
 
 if __name__ == "__main__":

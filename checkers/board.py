@@ -1,7 +1,16 @@
-from tkinter import Tk, Canvas
+from tkinter import Tk, Canvas, messagebox
 from itertools import product
 from json_socket import *
-from checkers_game import PIECE_WHITE, PIECE_KING_WHITE, PIECE_BLACK, PIECE_KING_BLACK, FIELD_WHITE, FIELD_BLACK, MIN_POS_BOARD, MAX_POS_BOARD
+from checkers_game import (
+    PIECE_WHITE,
+    PIECE_KING_WHITE,
+    PIECE_BLACK,
+    PIECE_KING_BLACK,
+    FIELD_WHITE,
+    FIELD_BLACK,
+    MIN_POS_BOARD,
+    MAX_POS_BOARD
+)
 import logging
 
 from server import Server
@@ -16,16 +25,20 @@ class Board(Tk):
         self.canvas = Canvas(self, width=width, height=height)
         self.canvas.bind("<Button-1>", self.on_click)
         self.canvas.pack()
-        #self.canvas.create_text(width / 2, height / 2, text="Aguardando oponente...")
 
         self.selected = None
         self.logic_board = []
 
         self.connection = JsonSocketClient()
+        self.connection.on('connect_response', self.connect_response)
         self.connection.on('board_response', self.update_board)
         self.connection.on('move_response', self.update_board)
         self.connection.on('start_game', self.update_board)
         self.connection.on('reset_game', self.reset_game)
+        self.connection.on('error', self.show_error)
+
+    def connect_response(self, color, _):
+        self.title('Checkers - ' + ('BLACKS' if color == 0 else 'WHITES'))
 
     def start_game(self, logic_board, _):
         self.update_board(logic_board)
@@ -38,6 +51,9 @@ class Board(Tk):
         self.logic_board = logic_board
         self.draw_board()
 
+    def show_error(self, error, _):
+        messagebox.showinfo('Erro', error)
+
     def draw_board(self):
         self.canvas.delete("all")
         r = range(MIN_POS_BOARD, MAX_POS_BOARD + 1)
@@ -47,14 +63,14 @@ class Board(Tk):
             cell = self.logic_board[i][j]
             color = "white" if cell == FIELD_WHITE else "grey"
             board.draw_rectangle(x1, y1, x2, y2, color)
-            pawnColor = None
+            pawn_color = None
             if cell == PIECE_WHITE:
-                pawnColor = "white"
+                pawn_color = "white"
             elif cell == PIECE_BLACK:
-                pawnColor = "black"
+                pawn_color = "black"
 
-            if pawnColor != None:
-                board.draw_circle(x1, y1, x2, y2, pawnColor)
+            if pawn_color != None:
+                board.draw_circle(x1, y1, x2, y2, pawn_color)
 
     def draw_rectangle(self, x1, y1, x2, y2, color):
         self.canvas.create_rectangle(x1, y1, x2, y2, fill=color, outline="black")
@@ -73,10 +89,8 @@ class Board(Tk):
         elif self.logic_board[x][y] > 0:
             self.selected = (x, y)
 
-        print("You clicked on cell (%s, %s)" % (x, y))
-
     def run(self):
-        self.title("Draughts")
+        self.title('Checkers')
         self.reset_game()
         self.connection.connect()
         self.mainloop()
