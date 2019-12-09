@@ -1,3 +1,5 @@
+from itertools import product
+
 FIELD_WHITE = None
 FIELD_BLACK = 0
 
@@ -17,6 +19,8 @@ MAX_POS_BOARD = 9
 
 PLAYER_BLACK = 0
 PLAYER_WHITE = 1
+PLAYER_BLACK_WINNER = 2
+PLAYER_WHITE_WINNER = 3
 
 MSG_NO_PIECE = 'There are no piece in this position'
 MSG_INVALID_MOVEMENT = 'Invalid moviment'
@@ -104,6 +108,9 @@ class CheckersGame():
             else:
                 turn = PLAYER_WHITE
 
+        if self.is_winner(player):
+            turn = player + 2
+
         return turn
 
     def kill(self, x, y):
@@ -140,12 +147,12 @@ class CheckersGame():
             self.validate_compulsory_capture(player)
 
     def validate_compulsory_capture(self, player):
-        for x in range(MIN_POS_BOARD, MAX_POS_BOARD + 1):
-            for y in range(MIN_POS_BOARD, MAX_POS_BOARD + 1):
-                if player == PLAYER_WHITE and self.is_pieces_white(x, y):
-                    self.check_neighbors_compulsory_capture(x, y, 1, PIECE_KING_WHITE, PIECES_BLACK)
-                elif player == PLAYER_BLACK and self.is_pieces_black(x, y):
-                    self.check_neighbors_compulsory_capture(x, y, -1, PIECE_KING_BLACK, PIECES_WHITE)
+        r = range(MIN_POS_BOARD, MAX_POS_BOARD + 1)
+        for (x, y) in product(r, r):
+            if player == PLAYER_WHITE and self.is_pieces_white(x, y):
+                self.check_neighbors_compulsory_capture(x, y, 1, PIECE_KING_WHITE, PIECES_BLACK)
+            elif player == PLAYER_BLACK and self.is_pieces_black(x, y):
+                self.check_neighbors_compulsory_capture(x, y, -1, PIECE_KING_BLACK, PIECES_WHITE)
 
     def capture(self, from_x, from_y, x_walk_diff, y_walk_diff, pieces_enemies):
         if abs(x_walk_diff) == 2 and abs(y_walk_diff) == 2:
@@ -207,6 +214,17 @@ class CheckersGame():
 
     def is_within_board(self, x, y):
         return x <= MAX_POS_BOARD and y <= MAX_POS_BOARD and x >= MIN_POS_BOARD and y >= MIN_POS_BOARD
+
+    def is_winner(self, player):
+        pieces_enemies = PIECES_BLACK if player == PLAYER_WHITE else PIECES_WHITE
+
+        count = 0
+        r = range(MIN_POS_BOARD, MAX_POS_BOARD + 1)
+        for (x, y) in product(r, r):
+            if self.board[x][y] in pieces_enemies:
+                count += 1
+
+        return count == 0
 
     def can_capture_neighbor(self, to_x, to_y, target_x, target_y, pieces_enemies):
         return self.is_within_board(to_x, to_y) and self.board[target_x][target_y] in pieces_enemies and not self.has_piece(to_x, to_y)

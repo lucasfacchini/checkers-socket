@@ -2,12 +2,11 @@ from tkinter import Tk, Canvas, messagebox
 from itertools import product
 from json_socket import *
 from checkers_game import (
-    PIECE_WHITE,
     PIECE_KING_WHITE,
-    PIECE_BLACK,
     PIECE_KING_BLACK,
+    PIECE_WHITE,
+    PIECE_BLACK,
     FIELD_WHITE,
-    FIELD_BLACK,
     MIN_POS_BOARD,
     MAX_POS_BOARD
 )
@@ -36,6 +35,7 @@ class Board(Tk):
         self.connection.on('start_game', self.update_board)
         self.connection.on('reset_game', self.reset_game)
         self.connection.on('error', self.show_error)
+        self.connection.on('show_winner', self.show_winner)
 
     def connect_response(self, color, _):
         self.title('Checkers - ' + ('BLACKS' if color == 0 else 'WHITES'))
@@ -54,20 +54,27 @@ class Board(Tk):
     def show_error(self, error, _):
         messagebox.showinfo('Erro', error)
 
+    def show_winner(self, msg, _):
+        messagebox.showinfo('Winner', msg)
+
     def draw_board(self):
-        self.canvas.delete("all")
+        self.canvas.delete('all')
         r = range(MIN_POS_BOARD, MAX_POS_BOARD + 1)
         for (i, j) in product(r, r):
             x1, y1 = (i * self.cellsize), (j * self.cellsize),
             x2, y2 = x1 + self.cellsize, y1 + self.cellsize
             cell = self.logic_board[i][j]
-            color = "white" if cell == FIELD_WHITE else "grey"
+            color = '#f7d19c' if cell == FIELD_WHITE else '#694418'
             board.draw_rectangle(x1, y1, x2, y2, color)
             pawn_color = None
             if cell == PIECE_WHITE:
-                pawn_color = "white"
+                pawn_color = 'white'
             elif cell == PIECE_BLACK:
-                pawn_color = "black"
+                pawn_color = 'black'
+            if cell == PIECE_KING_WHITE:
+                pawn_color = '#c9c9c9'
+            elif cell == PIECE_KING_BLACK:
+                pawn_color = '#c40404'
 
             if pawn_color != None:
                 board.draw_circle(x1, y1, x2, y2, pawn_color)
