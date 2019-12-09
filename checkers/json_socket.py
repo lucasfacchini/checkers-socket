@@ -4,7 +4,7 @@ import json
 from threading import Thread
 import logging
 
-BIND_ADDRESS = 'localhost'
+BIND_ADDRESS = '0.0.0.0'
 BIND_PORT = 8000
 SOCKET_CONNECT_HANDLE = 'connect'
 SOCKET_CLOSE_HANDLE = 'disconnect'
