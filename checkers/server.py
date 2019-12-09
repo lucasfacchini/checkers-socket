@@ -71,10 +71,10 @@ class Server:
             try:
                 turn = self.game.move(self.current_player.color, from_x, from_y, to_x, to_y)
                 if turn == PLAYER_BLACK_WINNER:
-                    connection.send_all(['show_winner', ['The black pieces win']])
+                    self.send_all(['show_winner', ['The black pieces win']])
                     return self.game.board
                 elif turn == PLAYER_WHITE_WINNER:
-                    connection.send_all(['show_winner', ['The white pieces win']])
+                    self.send_all(['show_winner', ['The white pieces win']])
                     return self.game.board
             except CheckersGameException as e:
                 connection.send_data(['error', [str(e)]])
