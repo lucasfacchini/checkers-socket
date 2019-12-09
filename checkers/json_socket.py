@@ -81,16 +81,18 @@ class JsonSocket:
 
 class JsonSocketClient(Thread, JsonSocket):
 
-    def __init__(self):
+    def __init__(self, address=BIND_ADDRESS, port=BIND_PORT):
         Thread.__init__(self)
         JsonSocket.__init__(self)
 
         self.daemon = True
         self.on(SOCKET_CLOSE_HANDLE, self.close)
+        self.address = address
+        self.port = port
 
     def connect(self):
         self.start_socket()
-        self.raddr = (BIND_ADDRESS, BIND_PORT)
+        self.raddr = (self.address, self.port)
         self.sock.connect(self.raddr)
         self.start()
 
@@ -107,17 +109,18 @@ class JsonSocketClient(Thread, JsonSocket):
 
 class JsonSocketServer(Thread, JsonSocket):
 
-    def __init__(self, max_clients=1):
+    def __init__(self, bind_port=BIND_PORT, max_clients=1):
         Thread.__init__(self)
         JsonSocket.__init__(self)
 
         self.daemon = True
         self.connections = []
         self.max_clients = max_clients
+        self.bind_port = bind_port
 
     def serve(self):
         self.start_socket()
-        self.sock.bind((BIND_ADDRESS, BIND_PORT))
+        self.sock.bind((BIND_ADDRESS, self.bind_port))
         self.sock.listen(1)
         self.start()
 

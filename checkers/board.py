@@ -16,7 +16,7 @@ from server import Server
 
 
 class Board(Tk):
-    def __init__(self, width, height, cellsize):
+    def __init__(self, width, height, cellsize, address=BIND_ADDRESS, port=BIND_PORT):
         Tk.__init__(self)
         self.cellsize = cellsize
         self.width = width
@@ -28,7 +28,7 @@ class Board(Tk):
         self.selected = None
         self.logic_board = []
 
-        self.connection = JsonSocketClient()
+        self.connection = JsonSocketClient(address, port)
         self.connection.on('connect_response', self.connect_response)
         self.connection.on('board_response', self.update_board)
         self.connection.on('move_response', self.update_board)
@@ -108,5 +108,13 @@ if __name__ == "__main__":
     logger = logging.getLogger()
     logger.setLevel(logging.DEBUG)
 
-    board = Board(400, 400, 40)
+    address = BIND_ADDRESS
+    if len(sys.argv) > 1:
+        address = sys.argv[1]
+
+    port = BIND_PORT
+    if len(sys.argv) > 2:
+        port = int(sys.argv[2])
+
+    board = Board(400, 400, 40, address=address, port=port)
     board.run()

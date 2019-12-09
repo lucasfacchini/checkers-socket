@@ -15,8 +15,8 @@ class Server:
     STATUS_ONGOING = 2
     STATUS_ENDGAME = 3
 
-    def __init__(self):
-        self.server = JsonSocketServer(max_clients=2)
+    def __init__(self, port):
+        self.server = JsonSocketServer(port, max_clients=2)
         self.server.on('connect', self.handle_join)
         self.server.on('move', lambda *argv: ['move_response', [self.handle_move(*argv)]])
         self.server.on('get_board', lambda _: ['board_response', [self.get_board()]])
@@ -117,7 +117,11 @@ class Player:
 
 
 if __name__ == "__main__":
+    port = BIND_PORT
+    if len(sys.argv) > 1:
+        port = int(sys.argv[1])
+
     logger = logging.getLogger()
     logger.setLevel(logging.DEBUG)
-    server = Server()
+    server = Server(port)
     server.start()
