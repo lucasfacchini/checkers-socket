@@ -19,3 +19,7 @@ python board.py
 ```
 
 Note: Python 3.6 and Tk library is required.
+
+# Screenshot #
+
+![Screenshot](screenshot.png)
