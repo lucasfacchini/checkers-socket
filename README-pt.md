@@ -17,3 +17,7 @@ python board.py
 ```
 
 Obs: Python 3.6 e biblioteca Tk são requiridos.
+
+# Screenshot #
+
+![Screenshot](screenshot.png)
